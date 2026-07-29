@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
@@ -17,9 +18,15 @@ function AppRouter() {
                     path="/register"
                     element={<RegisterPage />} />
 
+
                 <Route
                     path="/tasks"
-                    element={<TasksPage />} />
+                    element={
+                        <ProtectedRoute>
+                            <TasksPage />
+                        </ProtectedRoute>
+                    }
+                />
 
             </Routes>
         </BrowserRouter>
