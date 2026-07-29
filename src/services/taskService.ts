@@ -62,3 +62,16 @@ export function deleteTask(taskId: string) {
 
     return deleteDoc(taskReference);
 }
+
+export function updateTaskDetails(
+    taskId: string,
+    title: string,
+    description: string
+) {
+    const taskReference = doc(db, "tasks", taskId);
+
+    return updateDoc(taskReference, {
+        title,
+        description,
+    });
+}

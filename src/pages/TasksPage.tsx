@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { logoutUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
-import { createTask, deleteTask, subscribeToTasks, updateTaskCompletion } from "../services/taskService";
+import { createTask, deleteTask, subscribeToTasks, updateTaskCompletion, updateTaskDetails, } from "../services/taskService";
 import type { Task } from "../types/Task";
 
 
@@ -17,6 +17,11 @@ function TasksPage() {
         useState<string | null>(null);
     const [deletingTaskId, setDeletingTaskId] =
         useState<string | null>(null);
+    const [editingTaskId, setEditingTaskId] =
+        useState<string | null>(null);
+    const [editTitle, setEditTitle] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
 
     const { user } = useAuth();
 
@@ -125,6 +130,53 @@ function TasksPage() {
         }
     }
 
+    function startEditingTask(task: Task) {
+        setEditingTaskId(task.id);
+        setEditTitle(task.title);
+        setEditDescription(task.description);
+        setError("");
+    }
+
+    function cancelEditingTask() {
+        setEditingTaskId(null);
+        setEditTitle("");
+        setEditDescription("");
+    }
+
+    async function handleEditTask(
+        event: FormEvent<HTMLFormElement>,
+        taskId: string
+    ) {
+        event.preventDefault();
+
+        if (isSavingEdit) return;
+
+        const trimmedTitle = editTitle.trim();
+
+        if (!trimmedTitle) {
+            setError("El título de la tarea es obligatorio");
+            return;
+        }
+
+        setError("");
+        setIsSavingEdit(true);
+
+        try {
+            await updateTaskDetails(
+                taskId,
+                trimmedTitle,
+                editDescription.trim()
+            );
+
+            cancelEditingTask();
+        } catch (error) {
+            console.error(error);
+            setError("No se pudo editar la tarea");
+        } finally {
+            setIsSavingEdit(false);
+        }
+    }
+
     async function handleLogout() {
         if (isLoggingOut) return;
 
@@ -195,6 +247,64 @@ function TasksPage() {
                                 <p>
                                     Estado: {task.completed ? "Completada" : "Pendiente"}
                                 </p>
+
+                                {editingTaskId === task.id ? (
+                                    <form
+                                        onSubmit={(event) =>
+                                            handleEditTask(event, task.id)
+                                        }
+                                    >
+                                        <div>
+                                            <label htmlFor={`edit-title-${task.id}`}>
+                                                Editar título
+                                            </label>
+
+                                            <input
+                                                id={`edit-title-${task.id}`}
+                                                type="text"
+                                                value={editTitle}
+                                                onChange={(event) =>
+                                                    setEditTitle(event.target.value)
+                                                }
+                                                required
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor={`edit-description-${task.id}`}>
+                                                Editar descripción
+                                            </label>
+
+                                            <textarea
+                                                id={`edit-description-${task.id}`}
+                                                value={editDescription}
+                                                onChange={(event) =>
+                                                    setEditDescription(event.target.value)
+                                                }
+                                            />
+                                        </div>
+
+                                        <button type="submit" disabled={isSavingEdit}>
+                                            {isSavingEdit ? "Guardando..." : "Guardar cambios"}
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={cancelEditingTask}
+                                            disabled={isSavingEdit}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => startEditingTask(task)}
+                                        disabled={editingTaskId !== null}
+                                    >
+                                        Editar
+                                    </button>
+                                )}
 
                                 <button
                                     type="button"
