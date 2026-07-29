@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, onSnapshot, query, serverTimestamp, updateDoc, where, } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, updateDoc, where, } from "firebase/firestore";
 import type { Task } from "../types/Task";
 import { db } from "./firebase";
 
@@ -55,4 +55,10 @@ export function updateTaskCompletion(
     return updateDoc(taskReference, {
         completed,
     });
+}
+
+export function deleteTask(taskId: string) {
+    const taskReference = doc(db, "tasks", taskId);
+
+    return deleteDoc(taskReference);
 }

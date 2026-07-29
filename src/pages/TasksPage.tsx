@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { logoutUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
-import { createTask, subscribeToTasks, updateTaskCompletion } from "../services/taskService";
+import { createTask, deleteTask, subscribeToTasks, updateTaskCompletion } from "../services/taskService";
 import type { Task } from "../types/Task";
 
 
@@ -14,6 +14,8 @@ function TasksPage() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [isLoadingTasks, setIsLoadingTasks] = useState(true);
     const [updatingTaskId, setUpdatingTaskId] =
+        useState<string | null>(null);
+    const [deletingTaskId, setDeletingTaskId] =
         useState<string | null>(null);
 
     const { user } = useAuth();
@@ -103,6 +105,26 @@ function TasksPage() {
         }
     }
 
+    async function handleDeleteTask(task: Task) {
+        const confirmed = window.confirm(
+            `¿Seguro que querés eliminar la tarea "${task.title}"?`
+        );
+
+        if (!confirmed || deletingTaskId) return;
+
+        setError("");
+        setDeletingTaskId(task.id);
+
+        try {
+            await deleteTask(task.id);
+        } catch (error) {
+            console.error(error);
+            setError("No se pudo eliminar la tarea");
+        } finally {
+            setDeletingTaskId(null);
+        }
+    }
+
     async function handleLogout() {
         if (isLoggingOut) return;
 
@@ -184,6 +206,16 @@ function TasksPage() {
                                         : task.completed
                                             ? "Marcar como pendiente"
                                             : "Marcar como completada"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleDeleteTask(task)}
+                                    disabled={deletingTaskId !== null}
+                                >
+                                    {deletingTaskId === task.id
+                                        ? "Eliminando..."
+                                        : "Eliminar"}
                                 </button>
                             </li>
                         ))}
