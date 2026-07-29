@@ -1,7 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { logoutUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
-import { createTask } from "../services/taskService";
+import { createTask, subscribeToTasks } from "../services/taskService";
+import type { Task } from "../types/Task";
+
 
 function TasksPage() {
     const [error, setError] = useState("");
@@ -9,8 +11,39 @@ function TasksPage() {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [isCreating, setIsCreating] = useState(false);
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [isLoadingTasks, setIsLoadingTasks] = useState(true);
 
     const { user } = useAuth();
+
+    useEffect(() => {
+        if (!user) {
+            setTasks([]);
+            setIsLoadingTasks(false);
+            return;
+        }
+
+        setIsLoadingTasks(true);
+
+        const unsubscribe = subscribeToTasks(
+            user.uid,
+
+            (receivedTasks) => {
+                setTasks(receivedTasks);
+                setIsLoadingTasks(false);
+            },
+
+            (error) => {
+                console.error(error);
+                setError("No se pudieron cargar las tareas");
+                setIsLoadingTasks(false);
+            }
+        );
+
+        return () => {
+            unsubscribe();
+        };
+    }, [user]);
 
     async function handleCreateTask(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -98,6 +131,32 @@ function TasksPage() {
             </form>
 
             {error && <p role="alert">{error}</p>}
+
+            <section>
+                <h2>Lista de tareas</h2>
+
+                {isLoadingTasks && <p>Cargando tareas...</p>}
+
+                {!isLoadingTasks && tasks.length === 0 && (
+                    <p>Todavía no tenés tareas.</p>
+                )}
+
+                {!isLoadingTasks && tasks.length > 0 && (
+                    <ul>
+                        {tasks.map((task) => (
+                            <li key={task.id}>
+                                <h3>{task.title}</h3>
+
+                                {task.description && <p>{task.description}</p>}
+
+                                <p>
+                                    Estado: {task.completed ? "Completada" : "Pendiente"}
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
 
             <button
                 type="button"
