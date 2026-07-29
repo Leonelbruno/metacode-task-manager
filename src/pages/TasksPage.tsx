@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { logoutUser } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
-import { createTask, subscribeToTasks } from "../services/taskService";
+import { createTask, subscribeToTasks, updateTaskCompletion } from "../services/taskService";
 import type { Task } from "../types/Task";
 
 
@@ -13,6 +13,8 @@ function TasksPage() {
     const [isCreating, setIsCreating] = useState(false);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [isLoadingTasks, setIsLoadingTasks] = useState(true);
+    const [updatingTaskId, setUpdatingTaskId] =
+        useState<string | null>(null);
 
     const { user } = useAuth();
 
@@ -79,6 +81,25 @@ function TasksPage() {
             setError("No se pudo crear la tarea");
         } finally {
             setIsCreating(false);
+        }
+    }
+
+    async function handleToggleTask(task: Task) {
+        if (updatingTaskId) return;
+
+        setError("");
+        setUpdatingTaskId(task.id);
+
+        try {
+            await updateTaskCompletion(
+                task.id,
+                !task.completed
+            );
+        } catch (error) {
+            console.error(error);
+            setError("No se pudo actualizar la tarea");
+        } finally {
+            setUpdatingTaskId(null);
         }
     }
 
@@ -152,6 +173,18 @@ function TasksPage() {
                                 <p>
                                     Estado: {task.completed ? "Completada" : "Pendiente"}
                                 </p>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleToggleTask(task)}
+                                    disabled={updatingTaskId !== null}
+                                >
+                                    {updatingTaskId === task.id
+                                        ? "Actualizando..."
+                                        : task.completed
+                                            ? "Marcar como pendiente"
+                                            : "Marcar como completada"}
+                                </button>
                             </li>
                         ))}
                     </ul>

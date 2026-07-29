@@ -1,4 +1,4 @@
-import { addDoc, collection, onSnapshot, query, serverTimestamp, where, } from "firebase/firestore";
+import { addDoc, collection, doc, onSnapshot, query, serverTimestamp, updateDoc, where, } from "firebase/firestore";
 import type { Task } from "../types/Task";
 import { db } from "./firebase";
 
@@ -44,4 +44,15 @@ export function subscribeToTasks(
         },
         onError
     );
+}
+
+export function updateTaskCompletion(
+    taskId: string,
+    completed: boolean
+) {
+    const taskReference = doc(db, "tasks", taskId);
+
+    return updateDoc(taskReference, {
+        completed,
+    });
 }
