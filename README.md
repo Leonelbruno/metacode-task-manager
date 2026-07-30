@@ -20,7 +20,9 @@ Permite crear una cuenta, iniciar sesión, administrar tareas en tiempo real y r
 - [Funcionalidades](#funcionalidades)
 - [Tecnologías utilizadas](#tecnologías-utilizadas)
 - [Arquitectura del proyecto](#arquitectura-del-proyecto)
+- [Decisiones arquitectónicas](#decisiones-arquitectónicas)
 - [Flujo general de la aplicación](#flujo-general-de-la-aplicación)
+- [Flujo de envío de emails](#flujo-de-envío-de-emails)
 - [Instalación local](#instalación-local)
 - [Comandos disponibles](#comandos-disponibles)
 - [Tests](#tests)
@@ -145,6 +147,27 @@ metacode-task-manager/
 
 ---
 
+### Decisiones arquitectónicas
+
+El proyecto se organizó separando responsabilidades:
+
+- `pages/` contiene las pantallas principales.
+- `components/` contiene elementos reutilizables de la interfaz.
+- `services/` concentra la comunicación con Firebase, Firestore y la función de correo.
+- `context/` administra globalmente la sesión del usuario.
+- `routes/` controla la navegación y protege las rutas privadas.
+- `types/` centraliza los modelos de TypeScript.
+
+Se utilizó `AuthContext` para evitar consultar manualmente la sesión en cada componente.
+
+Las tareas se consultan en tiempo real mediante `onSnapshot`, permitiendo que la interfaz se actualice automáticamente cuando ocurre un cambio en Firestore.
+
+El envío de correos se implementó mediante una Vercel Function para impedir que las credenciales de AWS queden expuestas en el frontend.
+
+Cada tarea almacena el identificador de su propietario. Las consultas y las reglas de Firestore utilizan ese identificador para separar los datos de cada usuario.
+
+---
+
 ## Flujo general de la aplicación
 
 1. El usuario crea una cuenta o inicia sesión mediante Firebase Authentication.
@@ -155,6 +178,23 @@ metacode-task-manager/
 6. La interfaz recibe actualizaciones en tiempo real mediante un listener de Firestore.
 7. Al solicitar un resumen, el frontend llama a una Vercel Function.
 8. La función utiliza Amazon SES para enviar el correo sin exponer las credenciales de AWS en el navegador.
+
+---
+
+## Flujo de envío de emails
+
+1. El usuario presiona el botón **Enviar resumen por correo**.
+2. `TasksPage` obtiene el correo del usuario autenticado y las tareas actuales.
+3. `emailService` realiza una petición `POST` a `/api/send-summary`.
+4. La Vercel Function valida los datos recibidos.
+5. La función calcula la cantidad de tareas completadas y pendientes.
+6. Las credenciales de AWS se leen desde las variables de entorno del servidor.
+7. Amazon SES envía el resumen al correo del usuario.
+8. La función devuelve una respuesta de éxito o error al frontend.
+
+Las credenciales privadas nunca son enviadas al navegador.
+
+Amazon SES se encuentra actualmente en modo Sandbox, por lo que el destinatario debe estar previamente verificado.
 
 ---
 
@@ -479,6 +519,30 @@ Cada propuesta fue:
 5. Comprobada en el despliegue de producción.
 
 La inteligencia artificial fue utilizada como asistente técnico, mientras que las decisiones, implementaciones y validaciones finales fueron realizadas durante el desarrollo del proyecto.
+
+---
+
+## Situaciones en las que la IA fue más efectiva
+
+La inteligencia artificial fue especialmente útil para:
+
+- Interpretar errores extensos de consola y herramientas como ESLint y npm audit.
+- Proponer tests con Vitest y React Testing Library.
+- Crear mocks para evitar conexiones reales con Firebase y AWS durante las pruebas.
+- Organizar el diseño mobile-first sin modificar la lógica existente.
+- Revisar la estructura y documentación final del proyecto.
+
+## Patrones y buenas prácticas descubiertas
+
+A partir del uso de IA se reforzaron las siguientes prácticas:
+
+- No ejecutar soluciones automáticas como `npm audit fix --force` sin revisar sus consecuencias.
+- Aplicar el cambio más pequeño posible para resolver cada problema.
+- Verificar cada modificación ejecutando lint, tests y build.
+- Separar la interfaz, los servicios, los tipos y el manejo de sesión.
+- No exponer credenciales privadas en el frontend ni en GitHub.
+- Simular servicios externos durante los tests.
+- Probar las sugerencias de IA en lugar de aceptarlas automáticamente.
 
 ---
 
