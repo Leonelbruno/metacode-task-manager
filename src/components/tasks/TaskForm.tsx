@@ -18,21 +18,27 @@ function TaskForm({
     onSubmit,
 }: TaskFormProps) {
     return (
-        <form onSubmit={onSubmit}>
-            <div>
+        <form className="task-form" onSubmit={onSubmit}>
+            <div className="form-field">
                 <label htmlFor="title">Título</label>
 
                 <input
                     id="title"
                     type="text"
                     value={title}
-                    onChange={(event) => onTitleChange(event.target.value)}
+                    onChange={(event) =>
+                        onTitleChange(event.target.value)
+                    }
+                    placeholder="Ejemplo: Estudiar testing"
                     required
                 />
             </div>
 
-            <div>
-                <label htmlFor="description">Descripción</label>
+            <div className="form-field">
+                <label htmlFor="description">
+                    Descripción
+                    <span className="optional-label">Opcional</span>
+                </label>
 
                 <textarea
                     id="description"
@@ -40,10 +46,16 @@ function TaskForm({
                     onChange={(event) =>
                         onDescriptionChange(event.target.value)
                     }
+                    placeholder="Agregá más detalles sobre la tarea"
+                    rows={4}
                 />
             </div>
 
-            <button type="submit" disabled={isCreating}>
+            <button
+                className="button button--primary button--full"
+                type="submit"
+                disabled={isCreating}
+            >
                 {isCreating ? "Creando tarea..." : "Agregar tarea"}
             </button>
         </form>

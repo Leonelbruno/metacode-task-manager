@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { registerUser } from "../services/authService";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 
 function RegisterPage() {
@@ -30,7 +30,6 @@ function RegisterPage() {
 
         try {
             await registerUser(email, password);
-            console.log("Usuario creado correctamente");
             navigate("/tasks");
         } catch (error) {
             console.error(error);
@@ -49,46 +48,82 @@ function RegisterPage() {
     }
 
     return (
-        <main>
-            <h1>Registrarse</h1>
+        <main className="auth-page">
+            <section className="auth-card">
+                <p className="brand">MateCode</p>
 
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="email">Correo electrónico</label>
-
-                    <input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        required
-                    />
+                <div className="auth-heading">
+                    <h1>Crear cuenta</h1>
+                    <p>Registrate para comenzar a organizar tus tareas.</p>
                 </div>
 
-                <label htmlFor="password">Contraseña</label>
-                <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    required
-                />
+                <form className="auth-form" onSubmit={handleSubmit}>
+                    <div className="form-field">
+                        <label htmlFor="email">Correo electrónico</label>
 
-                <label htmlFor="confirmPassword">Verifique Contraseña</label>
-                <input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
-                    required
-                />
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                            autoComplete="email"
+                            placeholder="usuario@correo.com"
+                            required
+                        />
+                    </div>
 
-                {error && <p role="alert">{error}</p>}
+                    <div className="form-field">
+                        <label htmlFor="password">Contraseña</label>
 
-                <button type="submit" disabled={isLoading}>
-                    {isLoading ? "Creando cuenta..." : "Crear cuenta"}
-                </button>
-            </form>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(event) => setPassword(event.target.value)}
+                            autoComplete="new-password"
+                            placeholder="Mínimo 6 caracteres"
+                            required
+                        />
+                    </div>
+
+                    <div className="form-field">
+                        <label htmlFor="confirmPassword">
+                            Confirmar contraseña
+                        </label>
+
+                        <input
+                            id="confirmPassword"
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(event) =>
+                                setConfirmPassword(event.target.value)
+                            }
+                            autoComplete="new-password"
+                            placeholder="Repetí tu contraseña"
+                            required
+                        />
+                    </div>
+
+                    {error && (
+                        <p className="message message--error" role="alert">
+                            {error}
+                        </p>
+                    )}
+
+                    <button
+                        className="button button--primary button--full"
+                        type="submit"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? "Creando cuenta..." : "Crear cuenta"}
+                    </button>
+                </form>
+
+                <p className="auth-switch">
+                    ¿Ya tenés una cuenta?{" "}
+                    <Link to="/login">Iniciá sesión</Link>
+                </p>
+            </section>
         </main>
     );
 }

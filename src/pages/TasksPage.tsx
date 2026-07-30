@@ -134,68 +134,151 @@ function TasksPage() {
         }
     }
 
+    const completedTasks = tasks.filter(
+        (task) => task.completed
+    ).length;
+
+    const pendingTasks = tasks.length - completedTasks;
+
     return (
-        <main>
-            <h1>Mis tareas</h1>
-            <p>Aquí aparecerán tus tareas</p>
-            <TaskForm
-                title={title}
-                description={description}
-                isCreating={isCreating}
-                onTitleChange={setTitle}
-                onDescriptionChange={setDescription}
-                onSubmit={handleCreateTask}
-            />
+        <main className="tasks-page">
+            <div className="tasks-container">
+                <header className="tasks-header">
+                    <div>
+                        <p className="brand">MateCode</p>
+                        <h1>Mis tareas</h1>
 
-            {error && <p role="alert">{error}</p>}
+                        <p className="tasks-subtitle">
+                            {user?.email}
+                        </p>
+                    </div>
 
-            <section>
-                <h2>Lista de tareas</h2>
+                    <button
+                        className="button button--secondary"
+                        type="button"
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                    >
+                        {isLoggingOut
+                            ? "Cerrando sesión..."
+                            : "Cerrar sesión"}
+                    </button>
+                </header>
 
-                {isLoadingTasks && <p>Cargando tareas...</p>}
-
-                {!isLoadingTasks && tasks.length === 0 && (
-                    <p>Todavía no tenés tareas.</p>
+                {error && (
+                    <p className="message message--error" role="alert">
+                        {error}
+                    </p>
                 )}
 
-                {!isLoadingTasks && tasks.length > 0 && (
-                    <ul>
-                        {tasks.map((task) => (
-                            <TaskItem
-                                key={task.id}
-                                task={task}
-                                onError={setError}
-                            />
-                        ))}
-                    </ul>
-                )}
-            </section>
+                <div className="dashboard-grid">
+                    <section className="panel">
+                        <div className="section-heading">
+                            <span className="eyebrow">
+                                Organización
+                            </span>
+                            <h2>Nueva tarea</h2>
+                            <p>Agregá algo que necesites completar.</p>
+                        </div>
 
-            <section>
-                <h2>Resumen por correo</h2>
+                        <TaskForm
+                            title={title}
+                            description={description}
+                            isCreating={isCreating}
+                            onTitleChange={setTitle}
+                            onDescriptionChange={setDescription}
+                            onSubmit={handleCreateTask}
+                        />
+                    </section>
 
-                <button
-                    type="button"
-                    onClick={handleSendSummary}
-                    disabled={isSendingSummary || isLoadingTasks}
-                >
-                    {isSendingSummary
-                        ? "Enviando resumen..."
-                        : "Enviar resumen por correo"}
-                </button>
+                    <section className="panel summary-panel">
+                        <div className="section-heading">
+                            <span className="eyebrow">Resumen</span>
+                            <h2>Tu progreso</h2>
+                            <p>Revisá el estado general de tus tareas.</p>
+                        </div>
 
-                {summaryMessage && (
-                    <p role="status">{summaryMessage}</p>
-                )}
-            </section>
+                        <div className="task-stats">
+                            <div className="stat-card">
+                                <strong>{tasks.length}</strong>
+                                <span>Total</span>
+                            </div>
 
-            <button
-                type="button"
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-            >
-                {isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-            </button>
+                            <div className="stat-card">
+                                <strong>{completedTasks}</strong>
+                                <span>Completadas</span>
+                            </div>
+
+                            <div className="stat-card">
+                                <strong>{pendingTasks}</strong>
+                                <span>Pendientes</span>
+                            </div>
+                        </div>
+
+                        <button
+                            className="button button--primary button--full"
+                            type="button"
+                            onClick={handleSendSummary}
+                            disabled={
+                                isSendingSummary || isLoadingTasks
+                            }
+                        >
+                            {isSendingSummary
+                                ? "Enviando resumen..."
+                                : "Enviar resumen por correo"}
+                        </button>
+
+                        {summaryMessage && (
+                            <p
+                                className="message message--success"
+                                role="status"
+                            >
+                                {summaryMessage}
+                            </p>
+                        )}
+                    </section>
+                </div>
+
+                <section className="tasks-section">
+                    <div className="section-heading section-heading--row">
+                        <div>
+                            <span className="eyebrow">Actividad</span>
+                            <h2>Lista de tareas</h2>
+                        </div>
+
+                        <span className="task-count">
+                            {tasks.length}
+                        </span>
+                    </div>
+
+                    {isLoadingTasks && (
+                        <p className="empty-state">
+                            Cargando tareas...
+                        </p>
+                    )}
+
+                    {!isLoadingTasks && tasks.length === 0 && (
+                        <div className="empty-state">
+                            <h3>Todavía no tenés tareas</h3>
+                            <p>
+                                Creá tu primera tarea usando el formulario.
+                            </p>
+                        </div>
+                    )}
+
+                    {!isLoadingTasks && tasks.length > 0 && (
+                        <ul className="task-list">
+                            {tasks.map((task) => (
+                                <TaskItem
+                                    key={task.id}
+                                    task={task}
+                                    onError={setError}
+                                />
+                            ))}
+                        </ul>
+                    )}
+                </section>
+            </div>
         </main>
     );
 }

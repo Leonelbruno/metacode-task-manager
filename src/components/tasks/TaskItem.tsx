@@ -100,18 +100,37 @@ function TaskItem({ task, onError }: TaskItemProps) {
     }
 
     return (
-        <li>
-            <h3>{task.title}</h3>
+        <li
+            className={`task-card ${task.completed ? "task-card--completed" : ""
+                }`}
+        >
+            <div className="task-content">
+                <div className="task-card__heading">
+                    <h3>{task.title}</h3>
 
-            {task.description && <p>{task.description}</p>}
+                    <span
+                        className={`task-status ${task.completed
+                                ? "task-status--completed"
+                                : "task-status--pending"
+                            }`}
+                    >
+                        {task.completed ? "Completada" : "Pendiente"}
+                    </span>
+                </div>
 
-            <p>
-                Estado: {task.completed ? "Completada" : "Pendiente"}
-            </p>
+                {task.description && (
+                    <p className="task-description">
+                        {task.description}
+                    </p>
+                )}
+            </div>
 
             {isEditing ? (
-                <form onSubmit={handleEditTask}>
-                    <div>
+                <form
+                    className="task-edit-form"
+                    onSubmit={handleEditTask}
+                >
+                    <div className="form-field">
                         <label htmlFor={`edit-title-${task.id}`}>
                             Editar título
                         </label>
@@ -120,13 +139,17 @@ function TaskItem({ task, onError }: TaskItemProps) {
                             id={`edit-title-${task.id}`}
                             type="text"
                             value={editTitle}
-                            onChange={(event) => setEditTitle(event.target.value)}
+                            onChange={(event) =>
+                                setEditTitle(event.target.value)
+                            }
                             required
                         />
                     </div>
 
-                    <div>
-                        <label htmlFor={`edit-description-${task.id}`}>
+                    <div className="form-field">
+                        <label
+                            htmlFor={`edit-description-${task.id}`}
+                        >
                             Editar descripción
                         </label>
 
@@ -136,46 +159,64 @@ function TaskItem({ task, onError }: TaskItemProps) {
                             onChange={(event) =>
                                 setEditDescription(event.target.value)
                             }
+                            rows={3}
                         />
                     </div>
 
-                    <button type="submit" disabled={isSavingEdit}>
-                        {isSavingEdit ? "Guardando..." : "Guardar cambios"}
-                    </button>
+                    <div className="task-actions">
+                        <button
+                            className="button button--primary"
+                            type="submit"
+                            disabled={isSavingEdit}
+                        >
+                            {isSavingEdit
+                                ? "Guardando..."
+                                : "Guardar cambios"}
+                        </button>
 
-                    <button
-                        type="button"
-                        onClick={cancelEditingTask}
-                        disabled={isSavingEdit}
-                    >
-                        Cancelar
-                    </button>
+                        <button
+                            className="button button--secondary"
+                            type="button"
+                            onClick={cancelEditingTask}
+                            disabled={isSavingEdit}
+                        >
+                            Cancelar
+                        </button>
+                    </div>
                 </form>
             ) : (
-                <button type="button" onClick={startEditingTask}>
+                <button
+                    className="button button--secondary"
+                    type="button"
+                    onClick={startEditingTask}
+                >
                     Editar
                 </button>
             )}
 
-            <button
-                type="button"
-                onClick={handleToggleTask}
-                disabled={isUpdating}
-            >
-                {isUpdating
-                    ? "Actualizando..."
-                    : task.completed
-                        ? "Marcar como pendiente"
-                        : "Marcar como completada"}
-            </button>
+            <div className="task-actions">
+                <button
+                    className="button button--secondary"
+                    type="button"
+                    onClick={handleToggleTask}
+                    disabled={isUpdating}
+                >
+                    {isUpdating
+                        ? "Actualizando..."
+                        : task.completed
+                            ? "Marcar como pendiente"
+                            : "Marcar como completada"}
+                </button>
 
-            <button
-                type="button"
-                onClick={handleDeleteTask}
-                disabled={isDeleting}
-            >
-                {isDeleting ? "Eliminando..." : "Eliminar"}
-            </button>
+                <button
+                    className="button button--danger"
+                    type="button"
+                    onClick={handleDeleteTask}
+                    disabled={isDeleting}
+                >
+                    {isDeleting ? "Eliminando..." : "Eliminar"}
+                </button>
+            </div>
         </li>
     );
 }
