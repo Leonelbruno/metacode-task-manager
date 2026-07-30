@@ -22,13 +22,7 @@ function TasksPage() {
     const { user } = useAuth();
 
     useEffect(() => {
-        if (!user) {
-            setTasks([]);
-            setIsLoadingTasks(false);
-            return;
-        }
-
-        setIsLoadingTasks(true);
+        if (!user) return;
 
         const unsubscribe = subscribeToTasks(
             user.uid,
@@ -50,7 +44,9 @@ function TasksPage() {
         };
     }, [user]);
 
-    async function handleCreateTask(event: FormEvent<HTMLFormElement>) {
+    async function handleCreateTask(
+        event: FormEvent<HTMLFormElement>
+    ) {
         event.preventDefault();
 
         if (isCreating) return;
@@ -100,7 +96,10 @@ function TasksPage() {
         setIsSendingSummary(true);
 
         try {
-            const message = await sendTaskSummary(user.email, tasks);
+            const message = await sendTaskSummary(
+                user.email,
+                tasks
+            );
 
             setSummaryMessage(
                 message ?? "Resumen enviado correctamente"
