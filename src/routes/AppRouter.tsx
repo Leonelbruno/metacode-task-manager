@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 
 import LoginPage from "../pages/LoginPage";
@@ -9,6 +9,10 @@ function AppRouter() {
     return (
         <BrowserRouter>
             <Routes>
+                <Route
+                    path="/"
+                    element={<Navigate to="/login" replace />}
+                />
                 <Route
                     path="/login"
                     element={<LoginPage />}
@@ -26,6 +30,11 @@ function AppRouter() {
                             <TasksPage />
                         </ProtectedRoute>
                     }
+                />
+
+                <Route
+                    path="*"
+                    element={<Navigate to="/login" replace />}
                 />
 
             </Routes>

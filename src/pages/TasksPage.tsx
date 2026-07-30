@@ -5,6 +5,7 @@ import { createTask, subscribeToTasks, } from "../services/taskService";
 import type { Task } from "../types/Task";
 import TaskForm from "../components/tasks/TaskForm";
 import TaskItem from "../components/tasks/TaskItem";
+import { sendTaskSummary } from "../services/emailService";
 
 
 function TasksPage() {
@@ -15,6 +16,8 @@ function TasksPage() {
     const [isCreating, setIsCreating] = useState(false);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [isLoadingTasks, setIsLoadingTasks] = useState(true);
+    const [isSendingSummary, setIsSendingSummary] = useState(false);
+    const [summaryMessage, setSummaryMessage] = useState("");
 
     const { user } = useAuth();
 
@@ -84,6 +87,37 @@ function TasksPage() {
         }
     }
 
+    async function handleSendSummary() {
+        if (isSendingSummary) return;
+
+        if (!user?.email) {
+            setError("No se encontró el correo del usuario");
+            return;
+        }
+
+        setError("");
+        setSummaryMessage("");
+        setIsSendingSummary(true);
+
+        try {
+            const message = await sendTaskSummary(user.email, tasks);
+
+            setSummaryMessage(
+                message ?? "Resumen enviado correctamente"
+            );
+        } catch (error) {
+            console.error(error);
+
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "No se pudo enviar el resumen"
+            );
+        } finally {
+            setIsSendingSummary(false);
+        }
+    }
+
     async function handleLogout() {
         if (isLoggingOut) return;
 
@@ -134,6 +168,24 @@ function TasksPage() {
                             />
                         ))}
                     </ul>
+                )}
+            </section>
+
+            <section>
+                <h2>Resumen por correo</h2>
+
+                <button
+                    type="button"
+                    onClick={handleSendSummary}
+                    disabled={isSendingSummary || isLoadingTasks}
+                >
+                    {isSendingSummary
+                        ? "Enviando resumen..."
+                        : "Enviar resumen por correo"}
+                </button>
+
+                {summaryMessage && (
+                    <p role="status">{summaryMessage}</p>
                 )}
             </section>
 
